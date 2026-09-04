@@ -7,6 +7,8 @@ Administracion de Condominios.
 
 ## Responsable
 
+[@sebastianperez72](https://github.com/sebastianperez72) — API con base de datos (Java). Ver [INTEGRANTE.md](INTEGRANTE.md).
+
 Integrante a cargo de **API con BD #2**. Este repositorio es **autonomo**: se
 desarrolla, prueba y despliega sin depender del avance de los demas
 microservicios.
