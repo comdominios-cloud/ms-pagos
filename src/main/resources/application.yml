@@ -1,0 +1,29 @@
+server:
+  port: ${APP_PORT:8002}
+
+spring:
+  application:
+    name: ms-pagos
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:condominio_pagos}}
+    username: ${POSTGRES_USER:}
+    password: ${POSTGRES_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+# Swagger-UI en /swagger-ui.html y OpenAPI en /v3/api-docs
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
