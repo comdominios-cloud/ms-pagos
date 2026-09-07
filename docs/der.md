@@ -1,4 +1,4 @@
-# Diagrama Entidad-Relacion - ms-pagos
+# Diagrama Entidad-Relacion - ms-pagos (MySQL)
 
 > PLACEHOLDER. Reemplazar este archivo (o agregar `der.png` / `der.drawio`)
 > con el diagrama ER definitivo antes de la primera entrega.

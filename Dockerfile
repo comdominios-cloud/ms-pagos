@@ -16,6 +16,7 @@ WORKDIR /app
 
 COPY --from=build /build/target/*.jar app.jar
 
-EXPOSE 8002
+# Puerto interno del contenedor. Se publica como 9002 en la VM de produccion.
+EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

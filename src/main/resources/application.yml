@@ -1,20 +1,20 @@
 server:
-  port: ${APP_PORT:8002}
+  port: ${APP_PORT:8080}
 
 spring:
   application:
     name: ms-pagos
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:condominio_pagos}}
-    username: ${POSTGRES_USER:}
-    password: ${POSTGRES_PASSWORD:}
-    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:condominio_pagos}}
+    username: ${MYSQL_USER:}
+    password: ${MYSQL_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
 
 # Swagger-UI en /swagger-ui.html y OpenAPI en /v3/api-docs

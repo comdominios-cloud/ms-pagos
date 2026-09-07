@@ -7,11 +7,12 @@ Administracion de Condominios.
 
 ## Responsable
 
-[@sebastianperez72](https://github.com/sebastianperez72) — API con base de datos (Java). Ver [INTEGRANTE.md](INTEGRANTE.md).
+[@sebastianperez72](https://github.com/sebastianperez72) — API con base de datos (Java).
+Ver [INTEGRANTE.md](INTEGRANTE.md).
 
-Integrante a cargo de **API con BD #2**. Este repositorio es **autonomo**: se
-desarrolla, prueba y despliega sin depender del avance de los demas
-microservicios.
+Repositorio **autonomo**: se desarrolla, prueba y despliega sin depender del
+avance de los demas microservicios. Es el **segundo microservicio** que se
+demuestra con Postman en el avance del 50%.
 
 ## Dominio
 
@@ -25,9 +26,10 @@ ningun otro: el cruce de informacion entre servicios lo resuelve
 **ms-ficha-residente**, que es el consumidor de APIs del proyecto.
 
 ```
-web-condominio ──> API Gateway ──> ms-pagos ──> PostgreSQL
-                                      ^
-                                      └── ms-ficha-residente (consume esta API)
+web-condominio ──> balanceador ──> ms-pagos :9002 ──> MySQL :3306
+                                       ^              (VM de base de datos)
+                                       ├── ms-ficha-residente (consume esta API)
+                                       └── ingesta02 (lee la BD y la vuelca a S3)
 ```
 
 ## Stack
@@ -36,7 +38,7 @@ web-condominio ──> API Gateway ──> ms-pagos ──> PostgreSQL
 |-------------|-------------------------------------|
 | Lenguaje    | Java 21                             |
 | Framework   | Spring Boot 3.3 (Web + Data JPA)    |
-| Base de datos | PostgreSQL 16 (SQL)               |
+| Base de datos | **MySQL 8** (SQL)                 |
 | Documentacion | Swagger-UI en `/swagger-ui.html` (springdoc-openapi) |
 | Build       | Maven                               |
 | Contenedor  | Docker (multi-stage)                |
@@ -46,16 +48,23 @@ Ver [docs/schema.sql](docs/schema.sql) y [docs/der.md](docs/der.md).
 
 ## Puerto asignado
 
-**8002**
+**9002** publicado · **8080** dentro del contenedor (default de Spring Boot).
 
-| Microservicio       | Puerto |
-|---------------------|--------|
-| ms-residentes       | 8001   |
-| ms-pagos            | **8002** |
-| ms-incidencias      | 8003   |
-| ms-ficha-residente  | 8004   |
-| ms-analitico        | 8005   |
-| web-condominio (dev)| 5173   |
+El curso asigno el rango **9000-12000** para los microservicios; ese es el puerto
+que se habilita en el Security Group.
+
+| Microservicio | Publicado | Interno |
+|---------------|-----------|---------|
+| ms-residentes | 9001      | 8000    |
+| ms-pagos      | **9002**  | 8080    |
+| ms-incidencias| 9003      | 3003    |
+| ms-ficha-residente | 9004 | 8004    |
+| ms-analitico  | 9005      | 8005    |
+| web-condominio (dev) | 5173 | —     |
+
+Las bases de datos **no** entran en ese rango: PostgreSQL 5432, MySQL 3306,
+MongoDB 27017, alcanzables solo desde los Security Groups de la VM de produccion
+y la VM de ingesta.
 
 ## Endpoints REST planificados
 
@@ -74,7 +83,7 @@ Ver [docs/schema.sql](docs/schema.sql) y [docs/der.md](docs/der.md).
 Los dos endpoints que consume directamente el **frontend** son
 `GET /cuotas` y `GET /pagos`.
 
-Documentacion interactiva: `http://localhost:8002/swagger-ui.html`.
+Documentacion interactiva: `http://<ip-vm-produccion>:9002/swagger-ui.html`.
 
 ## Variables de entorno
 
@@ -83,14 +92,15 @@ Copiar [.env.example](.env.example) a `.env` y completar. **Nunca** commitear `.
 | Variable | Descripcion | Ejemplo |
 |----------|-------------|---------|
 | `APP_NAME` | Nombre del servicio | `ms-pagos` |
-| `APP_PORT` | Puerto de escucha | `8002` |
+| `APP_PORT` | Puerto dentro del contenedor | `8080` |
+| `PUBLISHED_PORT` | Puerto publicado en la VM | `9002` |
 | `SPRING_PROFILES_ACTIVE` | Perfil de Spring | `dev` / `prod` |
-| `POSTGRES_HOST` | Host de PostgreSQL | `postgres` (nombre del servicio en Compose) |
-| `POSTGRES_PORT` | Puerto de PostgreSQL | `5432` |
-| `POSTGRES_DB` | Nombre de la base | `condominio_pagos` |
-| `POSTGRES_USER` | Usuario de la base | *(sin valor en el repo)* |
-| `POSTGRES_PASSWORD` | Password del usuario | *(sin valor en el repo)* |
-| `SPRING_DATASOURCE_URL` | Cadena JDBC completa | `jdbc:postgresql://postgres:5432/condominio_pagos` |
+| `MYSQL_HOST` | IP privada de la VM de base de datos | *(sin valor en el repo)* |
+| `MYSQL_PORT` | Puerto de MySQL | `3306` |
+| `MYSQL_DATABASE` | Nombre de la base | `condominio_pagos` |
+| `MYSQL_USER` | Usuario de la base | *(sin valor en el repo)* |
+| `MYSQL_PASSWORD` | Password del usuario | *(sin valor en el repo)* |
+| `SPRING_DATASOURCE_URL` | Cadena JDBC completa | `jdbc:mysql://<ip-vm-bd>:3306/condominio_pagos` |
 
 ## Como levantar con Docker
 
@@ -99,38 +109,53 @@ Copiar [.env.example](.env.example) a `.env` y completar. **Nunca** commitear `.
 ```bash
 cp .env.example .env      # completar credenciales
 docker build -t ms-pagos .
-docker run --rm -p 8002:8002 --env-file .env ms-pagos
+docker run --rm -p 9002:8080 --env-file .env ms-pagos
 ```
 
-Luego abrir `http://localhost:8002/swagger-ui.html`.
+Luego abrir `http://localhost:9002/swagger-ui.html`.
 
-### Con PostgreSQL incluido (docker compose)
+### Con MySQL incluido (desarrollo local)
 
 ```yaml
 services:
-  postgres:
-    image: postgres:16
+  mysql:
+    image: mysql:8
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports: ["5432:5432"]
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports: ["3306:3306"]
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
       - ./docs/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
 
   ms-pagos:
     build: .
-    ports: ["8002:8002"]
+    ports: ["9002:8080"]
     env_file: .env
-    depends_on: [postgres]
+    depends_on: [mysql]
 
 volumes:
-  pg_data:
+  mysql_data:
 ```
 
 ```bash
 docker compose up --build
+```
+
+### En AWS
+
+MySQL corre como contenedor en la **VM de base de datos** (uno de los 3
+contenedores de esa maquina) y el microservicio en la **VM de produccion**, asi
+que `MYSQL_HOST` apunta a la **IP privada** de la VM de base de datos.
+
+La imagen se publica en **Docker Hub** para que las 2 VM de produccion gemelas
+hagan `pull` de la misma version:
+
+```bash
+docker build -t <usuario>/ms-pagos:0.1.0 .
+docker push <usuario>/ms-pagos:0.1.0
 ```
 
 ## Estructura
