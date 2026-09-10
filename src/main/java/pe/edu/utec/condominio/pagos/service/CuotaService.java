@@ -8,6 +8,7 @@ import pe.edu.utec.condominio.pagos.dto.CuotaResponse;
 import pe.edu.utec.condominio.pagos.dto.EstadoCuentaResponse;
 import pe.edu.utec.condominio.pagos.exception.ResourceNotFoundException;
 import pe.edu.utec.condominio.pagos.model.Cuota;
+import pe.edu.utec.condominio.pagos.model.Pago;
 import pe.edu.utec.condominio.pagos.repository.CuotaRepository;
 
 import java.math.BigDecimal;
@@ -61,9 +62,19 @@ public class CuotaService {
     public EstadoCuentaResponse estadoCuenta(Long unidadId) {
         List<Cuota> pendientes = cuotaRepository.findByUnidadIdAndEstadoIn(
                 unidadId, List.of(Cuota.Estado.PENDIENTE, Cuota.Estado.PARCIAL, Cuota.Estado.VENCIDA));
-        BigDecimal deudaTotal = cuotaRepository.sumMontoPendienteByUnidadId(unidadId);
-        List<pe.edu.utec.condominio.pagos.dto.CuotaResponse> cuotasResp =
-                pendientes.stream().map(CuotaResponse::fromEntitySinPagos).toList();
+
+        BigDecimal deudaTotal = pendientes.stream()
+                .map(this::saldoPendiente)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<CuotaResponse> cuotasResp = pendientes.stream().map(CuotaResponse::fromEntitySinPagos).toList();
         return new EstadoCuentaResponse(unidadId, deudaTotal, cuotasResp);
+    }
+
+    private BigDecimal saldoPendiente(Cuota cuota) {
+        BigDecimal pagado = cuota.getPagos().stream()
+                .map(Pago::getMontoPagado)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return cuota.getMonto().subtract(pagado);
     }
 }
