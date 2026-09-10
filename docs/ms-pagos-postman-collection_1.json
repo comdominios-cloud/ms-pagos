@@ -1,0 +1,115 @@
+{
+  "info": {
+    "name": "ms-pagos",
+    "description": "Coleccion de pruebas para el microservicio ms-pagos (cuotas de mantenimiento y pagos). CS2032 Cloud Computing - UTEC",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:9002", "type": "string" },
+    { "key": "cuota_id", "value": "1", "type": "string" },
+    { "key": "unidad_id", "value": "101", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+      }
+    },
+    {
+      "name": "Crear cuota",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"unidadId\": {{unidad_id}},\n  \"residenteId\": 1,\n  \"periodo\": \"2026-09\",\n  \"concepto\": \"Mantenimiento septiembre\",\n  \"monto\": 250.00,\n  \"fechaEmision\": \"2026-09-01\",\n  \"fechaVencim\": \"2026-09-15\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/cuotas", "host": ["{{base_url}}"], "path": ["cuotas"] }
+      }
+    },
+    {
+      "name": "Listar cuotas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/cuotas", "host": ["{{base_url}}"], "path": ["cuotas"] }
+      }
+    },
+    {
+      "name": "Listar cuotas filtradas (unidad + estado)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/cuotas?unidad_id={{unidad_id}}&estado=PENDIENTE",
+          "host": ["{{base_url}}"],
+          "path": ["cuotas"],
+          "query": [
+            { "key": "unidad_id", "value": "{{unidad_id}}" },
+            { "key": "estado", "value": "PENDIENTE" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Detalle de cuota",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/cuotas/{{cuota_id}}", "host": ["{{base_url}}"], "path": ["cuotas", "{{cuota_id}}"] }
+      }
+    },
+    {
+      "name": "Registrar pago (parcial)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuotaId\": {{cuota_id}},\n  \"montoPagado\": 100.00,\n  \"medioPago\": \"YAPE\",\n  \"referencia\": \"OP-12345\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/pagos", "host": ["{{base_url}}"], "path": ["pagos"] }
+      }
+    },
+    {
+      "name": "Registrar pago (completa el saldo)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuotaId\": {{cuota_id}},\n  \"montoPagado\": 150.00,\n  \"medioPago\": \"TRANSFERENCIA\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/pagos", "host": ["{{base_url}}"], "path": ["pagos"] }
+      }
+    },
+    {
+      "name": "Listar pagos por unidad",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/pagos?unidad_id={{unidad_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["pagos"],
+          "query": [{ "key": "unidad_id", "value": "{{unidad_id}}" }]
+        }
+      }
+    },
+    {
+      "name": "Estado de cuenta de unidad",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/unidades/{{unidad_id}}/estado-cuenta",
+          "host": ["{{base_url}}"],
+          "path": ["unidades", "{{unidad_id}}", "estado-cuenta"]
+        }
+      }
+    }
+  ]
+}
