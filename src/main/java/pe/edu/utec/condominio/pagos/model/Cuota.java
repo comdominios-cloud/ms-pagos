@@ -38,7 +38,7 @@ public class Cuota {
     @Column(name = "residente_id")
     private Long residenteId;
 
-    @Column(name = "periodo", nullable = false, length = 7)
+    @Column(name = "periodo", nullable = false, columnDefinition = "CHAR(7)")
     private String periodo; // formato 'YYYY-MM'
 
     @Column(name = "concepto", nullable = false, length = 160)
