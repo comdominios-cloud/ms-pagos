@@ -182,5 +182,5 @@ Andamiaje inicial. Sin endpoints ni logica de negocio implementados.
 
 ## Coleccion de Postman
 
-Coleccion lista para la demo en [docs/ms-pagos.postman_collection.json](docs/ms-pagos.postman_collection.json).
+Coleccion lista para la demo en [docs/ms-pagos.postman_collection.json](docs/ms-pagos.postman_collection_1.json).
 Importar en Postman y ajustar la variable `base_url` segun donde este corriendo el microservicio.
