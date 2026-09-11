@@ -177,10 +177,13 @@ docs/
 
 ## Estado
 
-Andamiaje inicial. Sin endpoints ni logica de negocio implementados.
-
+Microservicio funcional: 7 endpoints implementados y probados contra MySQL,
+con persistencia real. Imagen publicada en Docker Hub como
+[sebpecar75/ms-pagos](https://hub.docker.com/r/sebpecar75/ms-pagos).
+Coleccion de Postman disponible en [docs/ms-pagos-postman-collection_1.json](docs/ms-pagos-postman-collection_1.json).
 
 ## Coleccion de Postman
 
 Coleccion lista para la demo en [docs/ms-pagos-postman-collection_1.json](docs/ms-pagos-postman-collection_1.json).
 Importar en Postman y ajustar la variable `base_url` segun donde este corriendo el microservicio.
+
