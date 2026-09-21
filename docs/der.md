@@ -12,7 +12,7 @@ erDiagram
         bigint residente_id "id logico, puede ser NULL"
         char(7) periodo "YYYY-MM"
         varchar(160) concepto
-        decimal(10-2) monto "CHECK monto >= 0"
+        decimal monto "DECIMAL(10,2), CHECK monto >= 0"
         date fecha_emision
         date fecha_vencim
         varchar(20) estado "PENDIENTE | PARCIAL | PAGADA | VENCIDA | ANULADA"
@@ -22,7 +22,7 @@ erDiagram
     PAGOS {
         bigint id PK
         bigint cuota_id FK
-        decimal(10-2) monto_pagado "CHECK monto_pagado > 0"
+        decimal monto_pagado "DECIMAL(10,2), CHECK monto_pagado > 0"
         timestamp fecha_pago
         varchar(20) medio_pago "EFECTIVO | TRANSFERENCIA | TARJETA | YAPE | PLIN"
         varchar(80) referencia
